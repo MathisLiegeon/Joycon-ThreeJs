@@ -1,0 +1,8 @@
+@import url("main.css");
+@import url("global.css");
+
+:root {
+  --dark-900: #010101;
+  --dark-600: #1e1f22;
+  --dark-300: #cfcfcf;
+}
