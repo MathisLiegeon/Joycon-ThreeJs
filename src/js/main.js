@@ -84,9 +84,9 @@ function getScrollProgress() {
 }
 
 const keyframes = [
-  { progress: 0, pos: [0, 0, 0], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0, pos: [0, -1, 0], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 0.5, pos: [0, 0, 0], rotY: Math.PI * 0.7, rotX: Math.PI * 1.2 },
-  { progress: 1, pos: [0, 1, 0], rotY: Math.PI * 1.7, rotX: Math.PI * 2.2 },
+  { progress: 1, pos: [0, 0, 0], rotY: Math.PI * 1.7, rotX: Math.PI * 2.2 },
 ];
 
 function updateAnimation(progress) {
