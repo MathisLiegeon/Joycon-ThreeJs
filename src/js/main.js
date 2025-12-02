@@ -99,7 +99,12 @@ const keyframesJoycon = [
   { progress: 0, pos: [0, -0.5, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   // { progress: 0.4, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.21, pos: [15, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  {
+    progress: 0.21,
+    pos: [15, 0, -3],
+    rotY: Math.PI * 0.1,
+    rotX: Math.PI * 0.2,
+  },
   { progress: 0.22, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 0.45, pos: [3, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 1, pos: [0, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
@@ -109,6 +114,15 @@ const keyframesFloor = [
   { progress: 0, pos: [13, -1.5, -13], rotY: 0, rotX: 0 },
   { progress: 0.2, pos: [13, 5, -13], rotY: 0, rotX: 0 },
   { progress: 1, pos: [13, 2, -13], rotY: 0, rotX: 0 },
+];
+
+const cardKeyframes = [
+  { progress: 0.4, element: "#card1", className: "hide" },
+  { progress: 0.5, element: "#card1", className: "show" },
+  { progress: 0.5, element: "#card2", opacity: 1.0 },
+  { progress: 0.6, element: "#card2", opacity: 0.0 },
+  // { progress: 0.5,  element: '#text3', opacity: 1.0 },
+  // { progress: 1.0,  element: '#text3', opacity: 0.0 },
 ];
 
 // ✅ FONCTION CORRIGÉE avec gestion des rotations undefined
@@ -146,6 +160,20 @@ function applyKeyframesToModel(modelRef, frames, progress) {
   modelRef.rotation.x = prevRotX + (nextRotX - prevRotX) * localProgress;
 }
 
+function applyCardKeyframes(progress) {
+  cardKeyframes.forEach((kf) => {
+    if (Math.abs(progress - kf.progress) < 0.05) {
+      // Zone de 5%
+      const el = document.querySelector(kf.element);
+      if (el && kf.className) {
+        // Retire toutes les classes d'animation avant d'ajouter la nouvelle
+        el.classList.remove("show", "hide", "slide-in", "fade-out");
+        el.classList.add(kf.className);
+      }
+    }
+  });
+}
+
 // === ANIMATION ===
 function animate() {
   requestAnimationFrame(animate);
@@ -159,6 +187,8 @@ function animate() {
   if (floor) {
     applyKeyframesToModel(floor, keyframesFloor, progress);
   }
+
+  applyCardKeyframes(progress);
 
   renderer.render(scene, camera);
 }

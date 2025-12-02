@@ -9,4 +9,6 @@
   --dark-300: #cfcfcf;
 
   --light-900: #e0e0e0;
+
+  --transition-base: .5s ease;
 }
