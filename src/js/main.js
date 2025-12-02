@@ -25,7 +25,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 0, 5); // Positionne la caméra pour voir le modèle
+camera.position.set(0, 0, 5);
 
 // === LUMIÈRES ===
 const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
@@ -35,39 +35,51 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
-// === VARIABLES DE ROTATION LIEE À LA SOURIS ===
-let model; // variable globale pour ton objet
-let targetRotationY = 0;
-let currentRotationY = 0;
+// === VARIABLES ===
+let joycon;
+const joyconPath = "public/blender/joycon_lowpoly.glb";
 
-window.addEventListener("mousemove", (e) => {
-  const mouseX = (e.clientX / window.innerWidth) * 2 - 1; // -1 à 1
-  targetRotationY = mouseX * 0.1; // amplitude de rotation
-});
+let floor;
+const floorPath = "public/blender/floor.glb";
 
-// === LOADER (maintenant après scene/camera/lights) ===
+// === LOADER ===
 const gltfLoader = new GLTFLoader();
-const modelPath = "public/blender/joycon_lowpoly.glb";
 
 gltfLoader.load(
-  modelPath,
+  joyconPath,
   (gltf) => {
-    model = gltf.scene;
-    model.scale.set(2, 2, 2); // Ajuste si trop petit/grand
-    model.position.set(0, 0, 0);
-    model.rotation.set(0.5, Math.PI, 0); // Optionnel : rotation pour mieux voir
-
-    scene.add(model);
-    console.log("Modèle chargé et ajouté:", model);
+    joycon = gltf.scene;
+    joycon.scale.set(1.5, 1.5, 1.5);
+    joycon.position.set(0, 0, 0);
+    joycon.rotation.set(0.5, Math.PI, 0);
+    scene.add(joycon);
+    console.log("✅ Joycon chargé:", joycon);
   },
   (xhr) => {
     if (xhr.total)
-      console.log(
-        `Chargement: ${((xhr.loaded / xhr.total) * 100).toFixed(0)}%`
-      );
+      console.log(`Joycon: ${((xhr.loaded / xhr.total) * 100).toFixed(0)}%`);
   },
   (error) => {
-    console.error("Erreur chargement:", error);
+    console.error("❌ Erreur joycon:", error);
+  }
+);
+
+gltfLoader.load(
+  floorPath,
+  (gltf) => {
+    floor = gltf.scene;
+    floor.scale.set(1, 1, 1); // Plus grand pour le sol
+    floor.position.set(0, 0, 0); // SOUS le joycon
+    floor.rotation.set(0, 0, 0); // Pas de rotation bizarre
+    scene.add(floor);
+    console.log("✅ Floor chargé:", floor);
+  },
+  (xhr) => {
+    if (xhr.total)
+      console.log(`Floor: ${((xhr.loaded / xhr.total) * 100).toFixed(0)}%`);
+  },
+  (error) => {
+    console.error("❌ Erreur floor:", error);
   }
 );
 
@@ -78,28 +90,38 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-/* ------------------- SCROLL PROGRESS ------------------- */
+// === SCROLL PROGRESS ===
 function getScrollProgress() {
   return window.scrollY / (document.body.scrollHeight - window.innerHeight);
 }
 
-const keyframes = [
-  { progress: 0, pos: [0, -1, 0], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.5, pos: [0, 0, 0], rotY: Math.PI * 0.7, rotX: Math.PI * 1.2 },
-  { progress: 1, pos: [0, 0, 0], rotY: Math.PI * 1.7, rotX: Math.PI * 2.2 },
+const keyframesJoycon = [
+  { progress: 0, pos: [0, -0.5, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  // { progress: 0.4, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.21, pos: [15, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.22, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.45, pos: [3, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 1, pos: [0, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
 ];
 
-function updateAnimation(progress) {
-  let prev = keyframes[0];
-  let next = keyframes[keyframes.length - 1];
+const keyframesFloor = [
+  { progress: 0, pos: [13, -1.5, -13], rotY: 0, rotX: 0 },
+  { progress: 0.2, pos: [13, 5, -13], rotY: 0, rotX: 0 },
+  { progress: 1, pos: [13, 2, -13], rotY: 0, rotX: 0 },
+];
 
-  for (let i = 0; i < keyframes.length - 1; i++) {
-    if (
-      progress >= keyframes[i].progress &&
-      progress <= keyframes[i + 1].progress
-    ) {
-      prev = keyframes[i];
-      next = keyframes[i + 1];
+// ✅ FONCTION CORRIGÉE avec gestion des rotations undefined
+function applyKeyframesToModel(modelRef, frames, progress) {
+  if (!modelRef) return;
+
+  let prev = frames[0];
+  let next = frames[frames.length - 1];
+
+  for (let i = 0; i < frames.length - 1; i++) {
+    if (progress >= frames[i].progress && progress <= frames[i + 1].progress) {
+      prev = frames[i];
+      next = frames[i + 1];
       break;
     }
   }
@@ -107,32 +129,37 @@ function updateAnimation(progress) {
   const localProgress =
     (progress - prev.progress) / (next.progress - prev.progress);
 
-  // position
-  model.position.set(
+  // Position
+  modelRef.position.set(
     prev.pos[0] + (next.pos[0] - prev.pos[0]) * localProgress,
     prev.pos[1] + (next.pos[1] - prev.pos[1]) * localProgress,
     prev.pos[2] + (next.pos[2] - prev.pos[2]) * localProgress
   );
 
-  // rotation horizontale
-  model.rotation.y = prev.rotY + (next.rotY - prev.rotY) * localProgress;
+  // Rotation avec valeurs par défaut
+  const prevRotY = prev.rotY ?? 0;
+  const nextRotY = next.rotY ?? 0;
+  const prevRotX = prev.rotX ?? 0;
+  const nextRotX = next.rotX ?? 0;
 
-  // rotation verticale
-  model.rotation.x = prev.rotX + (next.rotX - prev.rotX) * localProgress;
+  modelRef.rotation.y = prevRotY + (nextRotY - prevRotY) * localProgress;
+  modelRef.rotation.x = prevRotX + (nextRotX - prevRotX) * localProgress;
 }
 
-// === BOUCLE D'ANIMATION ESSENTIELLE ===
+// === ANIMATION ===
 function animate() {
   requestAnimationFrame(animate);
 
-  if (model) {
-    // interpolation douce
-    currentRotationY += (targetRotationY - currentRotationY) * 0.05;
-    model.rotation.y = currentRotationY;
+  const progress = getScrollProgress();
 
-    const progress = getScrollProgress();
-    updateAnimation(progress);
+  if (joycon) {
+    applyKeyframesToModel(joycon, keyframesJoycon, progress);
   }
+
+  if (floor) {
+    applyKeyframesToModel(floor, keyframesFloor, progress);
+  }
+
   renderer.render(scene, camera);
 }
 animate();
