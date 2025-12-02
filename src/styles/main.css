@@ -9,6 +9,8 @@
 
 body {
   margin: 0;
+  font-family: "Cormorant Garamond", serif;
+  color: var(--light-900);
 }
 
 p {
@@ -46,4 +48,16 @@ h3,
 h4,
 h5 {
   margin: 0;
+}
+
+h1,
+h2 {
+  font-family: "Italiana", serif;
+  font-weight: 100;
+  font-size: 6rem;
+}
+
+h3,
+h4 {
+  font-family: "League Gothic", sans-serif;
 }

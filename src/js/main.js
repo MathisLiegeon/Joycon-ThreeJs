@@ -35,6 +35,16 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
+// === VARIABLES DE ROTATION LIEE À LA SOURIS ===
+let model; // variable globale pour ton objet
+let targetRotationY = 0;
+let currentRotationY = 0;
+
+window.addEventListener("mousemove", (e) => {
+  const mouseX = (e.clientX / window.innerWidth) * 2 - 1; // -1 à 1
+  targetRotationY = mouseX * 0.1; // amplitude de rotation
+});
+
 // === LOADER (maintenant après scene/camera/lights) ===
 const gltfLoader = new GLTFLoader();
 const modelPath = "public/blender/joycon_lowpoly.glb";
@@ -42,21 +52,13 @@ const modelPath = "public/blender/joycon_lowpoly.glb";
 gltfLoader.load(
   modelPath,
   (gltf) => {
-    const model = gltf.scene;
+    model = gltf.scene;
     model.scale.set(2, 2, 2); // Ajuste si trop petit/grand
     model.position.set(0, 0, 0);
     model.rotation.set(0.5, Math.PI, 0); // Optionnel : rotation pour mieux voir
 
     scene.add(model);
     console.log("Modèle chargé et ajouté:", model);
-
-    // // ANIMATION GSAP optionnelle
-    // gsap.to(model.rotation, {
-    //   y: Math.PI * 3,
-    //   duration: 10,
-    //   repeat: -1,
-    //   ease: "none",
-    // });
   },
   (xhr) => {
     if (xhr.total)
@@ -69,16 +71,68 @@ gltfLoader.load(
   }
 );
 
-// === BOUCLE D'ANIMATION ESSENTIELLE ===
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
-
 // === RESIZE ===
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+/* ------------------- SCROLL PROGRESS ------------------- */
+function getScrollProgress() {
+  return window.scrollY / (document.body.scrollHeight - window.innerHeight);
+}
+
+const keyframes = [
+  { progress: 0, pos: [0, 0, 0], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.5, pos: [0, 0, 0], rotY: Math.PI * 0.7, rotX: Math.PI * 1.2 },
+  { progress: 1, pos: [0, 1, 0], rotY: Math.PI * 1.7, rotX: Math.PI * 2.2 },
+];
+
+function updateAnimation(progress) {
+  let prev = keyframes[0];
+  let next = keyframes[keyframes.length - 1];
+
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    if (
+      progress >= keyframes[i].progress &&
+      progress <= keyframes[i + 1].progress
+    ) {
+      prev = keyframes[i];
+      next = keyframes[i + 1];
+      break;
+    }
+  }
+
+  const localProgress =
+    (progress - prev.progress) / (next.progress - prev.progress);
+
+  // position
+  model.position.set(
+    prev.pos[0] + (next.pos[0] - prev.pos[0]) * localProgress,
+    prev.pos[1] + (next.pos[1] - prev.pos[1]) * localProgress,
+    prev.pos[2] + (next.pos[2] - prev.pos[2]) * localProgress
+  );
+
+  // rotation horizontale
+  model.rotation.y = prev.rotY + (next.rotY - prev.rotY) * localProgress;
+
+  // rotation verticale
+  model.rotation.x = prev.rotX + (next.rotX - prev.rotX) * localProgress;
+}
+
+// === BOUCLE D'ANIMATION ESSENTIELLE ===
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (model) {
+    // interpolation douce
+    currentRotationY += (targetRotationY - currentRotationY) * 0.05;
+    model.rotation.y = currentRotationY;
+
+    const progress = getScrollProgress();
+    updateAnimation(progress);
+  }
+  renderer.render(scene, camera);
+}
+animate();

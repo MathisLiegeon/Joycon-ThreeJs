@@ -1,8 +1,12 @@
 @import url("main.css");
 @import url("global.css");
 
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Italiana&family=League+Gothic&display=swap");
+
 :root {
   --dark-900: #010101;
   --dark-600: #1e1f22;
   --dark-300: #cfcfcf;
+
+  --light-900: #e0e0e0;
 }
