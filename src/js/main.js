@@ -1,6 +1,5 @@
 import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 import { GLTFLoader } from "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
-import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
 
 const canvas = document.getElementById("3d-container");
 
@@ -96,33 +95,28 @@ function getScrollProgress() {
 }
 
 const keyframesJoycon = [
-  { progress: 0, pos: [0, -0.5, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0, pos: [0, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  // { progress: 0.4, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  {
-    progress: 0.21,
-    pos: [15, 0, -3],
-    rotY: Math.PI * 0.1,
-    rotX: Math.PI * 0.2,
-  },
+  { progress: 0.21, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 0.22, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.45, pos: [3, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 1, pos: [0, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.45, pos: [2, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+  { progress: 0.7, pos: [2, 0, 1], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
+  { progress: 1, pos: [1, 0.6, 2.2], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
 ];
 
 const keyframesFloor = [
-  { progress: 0, pos: [13, -1.5, -13], rotY: 0, rotX: 0 },
-  { progress: 0.2, pos: [13, 5, -13], rotY: 0, rotX: 0 },
-  { progress: 1, pos: [13, 2, -13], rotY: 0, rotX: 0 },
+  { progress: 0, pos: [36, -1.5, -13], rotY: 0, rotX: 0 },
+  { progress: 0.2, pos: [36, 4, -13], rotY: 0, rotX: 0 },
+  { progress: 1, pos: [36, 4, -13], rotY: 0, rotX: 0 },
 ];
 
 const cardKeyframes = [
-  { progress: 0.4, element: "#card1", className: "hide" },
-  { progress: 0.5, element: "#card1", className: "show" },
-  { progress: 0.5, element: "#card2", opacity: 1.0 },
-  { progress: 0.6, element: "#card2", opacity: 0.0 },
-  // { progress: 0.5,  element: '#text3', opacity: 1.0 },
-  // { progress: 1.0,  element: '#text3', opacity: 0.0 },
+  { progress: 0.24, element: "#card1", className: "hide" },
+  { progress: 0.25, element: "#card1", className: "show" },
+  { progress: 0.65, element: "#card1", className: "show" },
+  { progress: 0.7, element: "#card1", className: "hide" },
+  { progress: 0.85, element: "#card2", className: "hide" },
+  { progress: 0.9, element: "#card2", className: "show" },
 ];
 
 // ✅ FONCTION CORRIGÉE avec gestion des rotations undefined
