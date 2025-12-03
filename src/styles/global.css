@@ -1,3 +1,10 @@
+/* ------------------- CANVA ------------------- */
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
 /* ------------------- BODY ------------------- */
 body {
   background: var(--dark-900);
@@ -18,19 +25,20 @@ body::before {
 #header {
   width: 100svw;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding-block: 4rem;
+  text-align: center;
 }
 
 /* ------------------- OVERLAYS ------------------- */
 .card {
-  opacity: 0;
-  position: fixed;
+  /* position: fixed; */
   z-index: 10;
   transition: var(--transition-base);
 }
 
-.hide {
+/* .hide {
   opacity: 0;
   transform: translateX(0);
 }
@@ -38,11 +46,24 @@ body::before {
 .show {
   opacity: 1;
   transform: translateX(100px);
+} */
+
+/* ------------------- COMPONENTS ------------------- */
+.btn {
+  background: transparent;
+  border: solid 1px var(--dark-300);
+  padding: 0.5rem 2rem;
+  width: min-content;
+
+  transition: var(--transition-base);
 }
 
-/* ------------------- CANVA ------------------- */
-canvas {
+.btn:hover {
+  scale: 1.05;
+  cursor: pointer;
+}
+
+.btn-discover {
   position: fixed;
-  inset: 0;
-  z-index: -1;
+  bottom: 100px;
 }

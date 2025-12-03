@@ -58,6 +58,14 @@ gltfLoader.load(
     joycon.rotation.set(0, 0, 0);
     scene.add(joycon);
     console.log("✅ Joycon chargé:", joycon);
+
+    // Montre les mesh disponibles de l'objet
+    console.log("=== Parties disponibles ===");
+    joycon.traverse((child) => {
+      if (child.isMesh) {
+        console.log("- " + child.name);
+      }
+    });
   },
   (xhr) => {
     if (xhr.total)
@@ -167,3 +175,33 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
+
+//
+// ----------------------------------- Functions -----------------------------------
+function showOnlyPart(partNames) {
+  if (!joycon) return;
+
+  // Convertir en tableau si c'est une seule string
+  const partsArray = Array.isArray(partNames) ? partNames : [partNames];
+
+  // Parcourir tous les enfants du Joycon
+  joycon.traverse((child) => {
+    if (child.isMesh) {
+      // Vérifier si le nom du mesh correspond à un des noms recherchés
+      const isVisible = partsArray.some((partName) =>
+        child.name.toLowerCase().includes(partName.toLowerCase())
+      );
+      child.visible = isVisible;
+    }
+  });
+}
+
+function showAll() {
+  if (!joycon) return;
+
+  joycon.traverse((child) => {
+    if (child.isMesh) {
+      child.visible = true;
+    }
+  });
+}
