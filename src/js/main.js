@@ -1,9 +1,10 @@
 import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 import { GLTFLoader } from "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
 
+//
+// ----------------------------------- Base -----------------------------------
 const canvas = document.getElementById("3d-container");
 
-// === SCENE, CAMERA, RENDERER ===
 const scene = new THREE.Scene();
 
 const renderer = new THREE.WebGLRenderer({
@@ -17,6 +18,8 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 
+//
+// ----------------------------------- Elements de scène -----------------------------------
 // === CAMÉRA ===
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -34,23 +37,25 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
-// === VARIABLES ===
+// === OBJETS ===
 let joycon;
 const joyconPath = "public/blender/joycon_lowpoly.glb";
 
 let floor;
 const floorPath = "public/blender/floor.glb";
 
-// === LOADER ===
+//
+// ----------------------------------- Loader -----------------------------------
 const gltfLoader = new GLTFLoader();
 
+// Joycon loader
 gltfLoader.load(
   joyconPath,
   (gltf) => {
     joycon = gltf.scene;
     joycon.scale.set(1.5, 1.5, 1.5);
     joycon.position.set(0, 0, 0);
-    joycon.rotation.set(0.5, Math.PI, 0);
+    joycon.rotation.set(0, 0, 0);
     scene.add(joycon);
     console.log("✅ Joycon chargé:", joycon);
   },
@@ -63,13 +68,14 @@ gltfLoader.load(
   }
 );
 
+// Floor loader
 gltfLoader.load(
   floorPath,
   (gltf) => {
     floor = gltf.scene;
-    floor.scale.set(1, 1, 1); // Plus grand pour le sol
-    floor.position.set(0, 0, 0); // SOUS le joycon
-    floor.rotation.set(0, 0, 0); // Pas de rotation bizarre
+    floor.scale.set(1, 1, 1);
+    floor.position.set(0, 0, 0);
+    floor.rotation.set(0, 0, 0);
     scene.add(floor);
     console.log("✅ Floor chargé:", floor);
   },
@@ -82,18 +88,15 @@ gltfLoader.load(
   }
 );
 
-// === RESIZE ===
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
+//
+// ----------------------------------- Animations -----------------------------------
 // === SCROLL PROGRESS ===
 function getScrollProgress() {
   return window.scrollY / (document.body.scrollHeight - window.innerHeight);
 }
 
+// === KEYFRAMES ===
+// Joycon
 const keyframesJoycon = [
   { progress: 0, pos: [0, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
   { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
@@ -104,22 +107,14 @@ const keyframesJoycon = [
   { progress: 1, pos: [1, 0.6, 2.2], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
 ];
 
+// Floor
 const keyframesFloor = [
   { progress: 0, pos: [36, -1.5, -13], rotY: 0, rotX: 0 },
   { progress: 0.2, pos: [36, 4, -13], rotY: 0, rotX: 0 },
   { progress: 1, pos: [36, 4, -13], rotY: 0, rotX: 0 },
 ];
 
-const cardKeyframes = [
-  { progress: 0.24, element: "#card1", className: "hide" },
-  { progress: 0.25, element: "#card1", className: "show" },
-  { progress: 0.65, element: "#card1", className: "show" },
-  { progress: 0.7, element: "#card1", className: "hide" },
-  { progress: 0.85, element: "#card2", className: "hide" },
-  { progress: 0.9, element: "#card2", className: "show" },
-];
-
-// ✅ FONCTION CORRIGÉE avec gestion des rotations undefined
+// === Fonction qui gère les animations ===
 function applyKeyframesToModel(modelRef, frames, progress) {
   if (!modelRef) return;
 
@@ -154,21 +149,8 @@ function applyKeyframesToModel(modelRef, frames, progress) {
   modelRef.rotation.x = prevRotX + (nextRotX - prevRotX) * localProgress;
 }
 
-function applyCardKeyframes(progress) {
-  cardKeyframes.forEach((kf) => {
-    if (Math.abs(progress - kf.progress) < 0.05) {
-      // Zone de 5%
-      const el = document.querySelector(kf.element);
-      if (el && kf.className) {
-        // Retire toutes les classes d'animation avant d'ajouter la nouvelle
-        el.classList.remove("show", "hide", "slide-in", "fade-out");
-        el.classList.add(kf.className);
-      }
-    }
-  });
-}
-
-// === ANIMATION ===
+//
+// === Activer les animations ===
 function animate() {
   requestAnimationFrame(animate);
 
@@ -181,8 +163,6 @@ function animate() {
   if (floor) {
     applyKeyframesToModel(floor, keyframesFloor, progress);
   }
-
-  applyCardKeyframes(progress);
 
   renderer.render(scene, camera);
 }
