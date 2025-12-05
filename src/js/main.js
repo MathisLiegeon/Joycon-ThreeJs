@@ -66,6 +66,8 @@ gltfLoader.load(
         console.log("- " + child.name);
       }
     });
+
+    animateJoyconFloat();
   },
   (xhr) => {
     if (xhr.total)
@@ -82,7 +84,7 @@ gltfLoader.load(
   (gltf) => {
     floor = gltf.scene;
     floor.scale.set(1, 1, 1);
-    floor.position.set(0, 0, 0);
+    floor.position.set(36, -1.5, -13);
     floor.rotation.set(0, 0, 0);
     scene.add(floor);
     console.log("✅ Floor chargé:", floor);
@@ -105,15 +107,15 @@ function getScrollProgress() {
 
 // === KEYFRAMES ===
 // Joycon
-const keyframesJoycon = [
-  { progress: 0, pos: [0, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.21, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.22, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.45, pos: [2, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-  { progress: 0.7, pos: [2, 0, 1], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
-  { progress: 1, pos: [1, 0.6, 2.2], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
-];
+// const keyframesJoycon = [
+//   { progress: 0, pos: [0, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+//   { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+//   { progress: 0.21, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+//   { progress: 0.22, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+//   { progress: 0.45, pos: [2, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
+//   { progress: 0.7, pos: [2, 0, 1], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
+//   { progress: 1, pos: [1, 0.6, 2.2], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
+// ];
 
 // Floor
 const keyframesFloor = [
@@ -164,9 +166,9 @@ function animate() {
 
   const progress = getScrollProgress();
 
-  if (joycon) {
-    applyKeyframesToModel(joycon, keyframesJoycon, progress);
-  }
+  // if (joycon) {
+  //   applyKeyframesToModel(joycon, keyframesJoycon, progress);
+  // }
 
   if (floor) {
     applyKeyframesToModel(floor, keyframesFloor, progress);
@@ -176,6 +178,7 @@ function animate() {
 }
 animate();
 
+//
 //
 // ----------------------------------- Functions -----------------------------------
 function showOnlyPart(partNames) {
@@ -203,5 +206,23 @@ function showAll() {
     if (child.isMesh) {
       child.visible = true;
     }
+  });
+}
+
+// ----------------------------------- GSAP Animations -----------------------------------
+
+// Enregistrer les plugins GSAP
+gsap.registerPlugin(ScrollTrigger);
+
+// Animation 2 : Flottement continu
+function animateJoyconFloat() {
+  if (!joycon) return;
+
+  gsap.to(joycon.position, {
+    y: "+=0.3",
+    duration: 2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut",
   });
 }
