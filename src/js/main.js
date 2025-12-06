@@ -2,7 +2,12 @@ import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 import { GLTFLoader } from "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
 
 //
-// ----------------------------------- Base -----------------------------------
+//
+//
+//
+//
+//
+// ===================================================== BASE ===================================================== //
 const canvas = document.getElementById("3d-container");
 
 const scene = new THREE.Scene();
@@ -19,8 +24,13 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 
 //
-// ----------------------------------- Elements de scène -----------------------------------
-// === CAMÉRA ===
+//
+//
+//
+//
+//
+// ===================================================== SCENE ELEMENTS ===================================================== //
+// =============== CAMÉRA ===============
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -29,7 +39,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 0, 5);
 
-// === LUMIÈRES ===
+// =============== LIGHTS ===============
 const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
 scene.add(ambientLight);
 
@@ -37,7 +47,7 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
-// === OBJETS ===
+// =============== OBJECTS ===============
 let joycon;
 const joyconPath = "public/blender/joycon_lowpoly.glb";
 
@@ -45,10 +55,15 @@ let floor;
 const floorPath = "public/blender/floor.glb";
 
 //
-// ----------------------------------- Loader -----------------------------------
+//
+//
+//
+//
+//
+// ===================================================== LOADER ===================================================== //
 const gltfLoader = new GLTFLoader();
 
-// Joycon loader
+// =============== JOYCON ===============
 gltfLoader.load(
   joyconPath,
   (gltf) => {
@@ -57,32 +72,19 @@ gltfLoader.load(
     joycon.position.set(0, 0, 0);
     joycon.rotation.set(0, 0, 0);
     scene.add(joycon);
-    console.log("✅ Joycon chargé:", joycon);
 
     // pour gsap
     window.joycon = joycon;
 
-    // // Montre les mesh disponibles de l'objet
-    // console.log("=== Parties disponibles ===");
-    // joycon.traverse((child) => {
-    //   if (child.isMesh) {
-    //     console.log("- " + child.name);
-    //   }
-    // });
-
     getParts();
     initTimeline();
-  },
-  (xhr) => {
-    if (xhr.total)
-      console.log(`Joycon: ${((xhr.loaded / xhr.total) * 100).toFixed(0)}%`);
   },
   (error) => {
     console.error("❌ Erreur joycon:", error);
   }
 );
 
-// Floor loader
+// =============== FLOOR ===============
 gltfLoader.load(
   floorPath,
   (gltf) => {
@@ -91,11 +93,6 @@ gltfLoader.load(
     floor.position.set(36, -1.5, -13);
     floor.rotation.set(0, 0, 0);
     scene.add(floor);
-    console.log("✅ Floor chargé:", floor);
-  },
-  (xhr) => {
-    if (xhr.total)
-      console.log(`Floor: ${((xhr.loaded / xhr.total) * 100).toFixed(0)}%`);
   },
   (error) => {
     console.error("❌ Erreur floor:", error);
@@ -103,20 +100,25 @@ gltfLoader.load(
 );
 
 //
-// ----------------------------------- Animations -----------------------------------
-// === SCROLL PROGRESS ===
+//
+//
+//
+//
+//
+// ===================================================== GSAP ANIMATIONS (floor) ===================================================== //
+// =============== INIT ===============
 function getScrollProgress() {
   return window.scrollY / (document.body.scrollHeight - window.innerHeight);
 }
 
-// Floor
+// =============== KEYFRAMES ===============
 const keyframesFloor = [
   { progress: 0, pos: [36, -1.5, -20], rotY: 0, rotX: 0 },
   { progress: 0.2, pos: [36, 4, -20], rotY: 0, rotX: 0 },
   { progress: 1, pos: [36, 4, -20], rotY: 0, rotX: 0 },
 ];
 
-// === Fonction qui gère les animations ===
+// =============== APPLYING KEYFRAMES ===============
 function applyKeyframesToModel(modelRef, frames, progress) {
   if (!modelRef) return;
 
@@ -152,7 +154,7 @@ function applyKeyframesToModel(modelRef, frames, progress) {
 }
 
 //
-// === Activer les animations ===
+// =============== ACTIVATE ANIMATION ===============
 function animate() {
   requestAnimationFrame(animate);
 
@@ -168,9 +170,13 @@ animate();
 
 //
 //
-// ----------------------------------- Functions -----------------------------------
+//
+//
+//
+//
+// ===================================================== FUNCTIONS ===================================================== //
 
-// Animation flottement Joycon avec GSAP
+// =============== FLOATING ===============
 let floatTween = null;
 function gsapFloatJoycon() {
   if (floatTween) return;
@@ -191,30 +197,22 @@ function stopGsapFloatJoycon() {
   }
 }
 
+//
+// =============== GET JOYCON PARTS ===============
 window.joyconParts = {};
 window.joyconOriginalPositions = {};
 
 function getParts() {
   joycon.traverse((child) => {
-    // SEULEMENT LES GROUPS avec userData.name
     const componentName = child.userData.name;
-
-    window.joyconOriginalPositions[componentName] = {
-      x: child.position.x,
-      y: child.position.y,
-      z: child.position.z,
-    };
-
     window.joyconParts[componentName] = child;
-    // console.log(`✅ Group trouvé: "${componentName}"`);
   });
-
-  console.log("✅ Groups Joycon:", Object.keys(window.joyconParts));
-  console.log("✅ Détails Groups:", window.joyconParts);
 
   getMainBlueMeshes();
 }
 
+//
+// =============== MODIFY TEXTURE COLOR ===============
 window.mainBlueMeshes = [];
 
 function getMainBlueMeshes() {
@@ -245,19 +243,17 @@ function resetMainBlueColor() {
   });
 }
 
-function zoomJoycon(inOut) {
-  const targetZ = inOut ? 2 : 0; // -2 = rapproche, 0 = original
-  joycon.position.z = targetZ;
-}
-
+//
+// =============== MAP POSITION OF EACH COMPONENT ===============
+// Used for the first animation with animateParts()
 const partsList = [
   { name: "screw-1", offset: { x: 0, y: -1.3, z: 0 } },
   { name: "screw-2", offset: { x: 0, y: -1.3, z: 0 } },
   { name: "screw-3", offset: { x: 0, y: -1.3, z: 0 } },
   { name: "screw-4", offset: { x: 0, y: -1.3, z: 0 } },
   { name: "Base", offset: { x: 0, y: -0.5, z: 0 } },
-  { name: "clip-1", offset: { x: 0, y: 0, z: 1 } },
-  { name: "clip-2", offset: { x: 0, y: 0, z: 1 } },
+  { name: "clip-1", offset: { x: 0, y: -0.5, z: 0.7 } },
+  { name: "clip-2", offset: { x: 0, y: -0.5, z: 0.7 } },
   { name: "Joystick", offset: { x: 0, y: 1, z: 0 } },
   { name: "Slideout", offset: { x: 0, y: -1, z: 0 } },
   { name: "trigger-1", offset: { x: 1, y: 0.15, z: 0 } },
@@ -270,6 +266,8 @@ const partsList = [
   { name: "Minus", offset: { x: 0, y: 0.1, z: 0 } },
 ];
 
+//
+// =============== ANIMATE JOYCON PARTS ===============
 function animateParts(
   tl,
   action,
@@ -298,35 +296,37 @@ function animateParts(
 
   return tl;
 }
-// ----------------------------------- GSAP Animations -----------------------------------
-
+//
+//
+//
+//
+//
+//
+// ===================================================== TIMELINE ===================================================== //
 // Enregistrer les plugins GSAP
 gsap.registerPlugin(ScrollTrigger);
 
 function initTimeline() {
-  const totalDuration = 30;
+  const totalDuration = 30; // Durée de la timeline
+
+  //
+  // ============================== INIT TIMELINE ==============================
   const tl = gsap.timeline({
     scrollTrigger: {
       trigger: ".main",
       start: "top top",
-      end: `+=${totalDuration * 625}`, // auto-calcul
+      end: `+=${totalDuration * 625}`, // auto-calcul de la longueur de la timeline
       scrub: true,
       pin: true,
       // markers: true,
     },
   });
 
-  // tl.eventCallback("onUpdate", () => {
-  //   console.log("Timeline progress:", tl.progress().toFixed(2));
-  // });
-
-  // Démarre le flottement à 0%
-  tl.call(gsapFloatJoycon, null, "0%")
-
-    // Arrête le flottement à 10%
-
+  //
+  // ============================== PART 1 ==============================
+  tl.call(gsapFloatJoycon, null, "0%") // start floating
     .fromTo(
-      joycon.rotation,
+      joycon.rotation, // rotation 1.1
       {
         y: Math.PI * 0.2,
         x: Math.PI * 0.15,
@@ -338,8 +338,8 @@ function initTimeline() {
       },
       "5%"
     )
-    .call(gsapFloatJoycon, null, "9%")
-    .call(stopGsapFloatJoycon, null, "10%")
+    .call(gsapFloatJoycon, null, "9%") // start floating
+    .call(stopGsapFloatJoycon, null, "10%") // end floating
     .fromTo(
       "#card1",
       { opacity: 0, scale: 0.8 },
@@ -348,14 +348,14 @@ function initTimeline() {
     )
     .to(
       joycon.position,
-      { z: 1.1, duration: 1.5, ease: "power2.inOut" },
+      { z: 1.1, duration: 1.5, ease: "power2.inOut" }, // zoom in
       "10%"
     );
 
-  animateParts(tl, "disperse", "10%");
+  animateParts(tl, "disperse", "10%"); // Animate parts
 
   tl.to(
-    joycon.rotation,
+    joycon.rotation, // rotation 1.2
     {
       y: Math.PI * 0.1,
       x: Math.PI * 0.3,
@@ -365,9 +365,9 @@ function initTimeline() {
     "10%"
   );
 
-  animateParts(tl, "reform", "10%+=3", 1.5, 0.1)
+  animateParts(tl, "reform", "10%+=3", 1.5, 0.1) // Animate parts
     .to(
-      joycon.rotation,
+      joycon.rotation, // rotation 1.3
       {
         y: Math.PI * -0.1,
         x: Math.PI * 0.2,
@@ -376,9 +376,11 @@ function initTimeline() {
       },
       "10%+=3"
     )
-    .to(joycon.position, { z: 0, duration: 1, ease: "power2.inOut" }, ">")
+    .to(joycon.position, { z: 0, duration: 1, ease: "power2.inOut" }, ">") // zoom out
     .to("#card1", { opacity: 0, duration: 2 }, ">")
 
+    //
+    // ============================== PART 2 ==============================
     .fromTo(
       "#card2",
       { opacity: 0, scale: 0.8 },
@@ -386,7 +388,7 @@ function initTimeline() {
       "25%"
     )
     .fromTo(
-      joycon.rotation,
+      joycon.rotation, // rotation 2
       {
         y: Math.PI * -0.1,
         x: Math.PI * 0.2,
@@ -398,7 +400,7 @@ function initTimeline() {
       },
       "25%"
     )
-    .to(joycon.position, { z: 2, duration: 2, ease: "power2.inOut" }, "25%")
+    .to(joycon.position, { z: 2, duration: 2, ease: "power2.inOut" }, "25%") // Color change
     .to({}, { duration: 0.1, onUpdate: resetMainBlueColor }, "25%")
     .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0xff0000) }, ">")
     .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0x00ff00) }, ">")
@@ -406,8 +408,10 @@ function initTimeline() {
     .to({}, { duration: 0.1, onUpdate: resetMainBlueColor }, ">")
     .to(joycon.position, { z: 0, duration: 1, ease: "power2.inOut" }, ">")
 
-    .to("#card2", { opacity: 0, duration: 1 }, ">")
+    .to("#card2", { opacity: 0, duration: 1 }, ">") // Part 2 End
 
+    //
+    // ============================== PART 3 ==============================
     .fromTo(
       "#card3",
       { opacity: 0, scale: 0.8 },
@@ -416,6 +420,8 @@ function initTimeline() {
     )
     .to("#card3", { opacity: 0, duration: 1 }, ">")
 
+    //
+    // ============================== PART 4 ==============================
     .fromTo(
       "#card4",
       { opacity: 0, scale: 0.8 },
@@ -423,6 +429,9 @@ function initTimeline() {
       "60%"
     )
     .to("#card4", { opacity: 0, duration: 1 }, ">")
+
+    //
+    // ============================== PART 5 ==============================
     .fromTo(
       "#card5",
       { opacity: 0, scale: 0.8 },
