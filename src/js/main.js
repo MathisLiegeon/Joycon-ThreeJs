@@ -62,15 +62,16 @@ gltfLoader.load(
     // pour gsap
     window.joycon = joycon;
 
-    // Montre les mesh disponibles de l'objet
-    console.log("=== Parties disponibles ===");
-    joycon.traverse((child) => {
-      if (child.isMesh) {
-        console.log("- " + child.name);
-      }
-    });
+    // // Montre les mesh disponibles de l'objet
+    // console.log("=== Parties disponibles ===");
+    // joycon.traverse((child) => {
+    //   if (child.isMesh) {
+    //     console.log("- " + child.name);
+    //   }
+    // });
 
-    initTimeline()
+    getParts();
+    initTimeline();
   },
   (xhr) => {
     if (xhr.total)
@@ -108,23 +109,11 @@ function getScrollProgress() {
   return window.scrollY / (document.body.scrollHeight - window.innerHeight);
 }
 
-// === KEYFRAMES ===
-// Joycon
-// const keyframesJoycon = [
-//   { progress: 0, pos: [0, 0, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-//   { progress: 0.2, pos: [0, 2, -3], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-//   { progress: 0.21, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-//   { progress: 0.22, pos: [15, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-//   { progress: 0.45, pos: [2, 0, 1], rotY: Math.PI * 0.1, rotX: Math.PI * 0.2 },
-//   { progress: 0.7, pos: [2, 0, 1], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
-//   { progress: 1, pos: [1, 0.6, 2.2], rotY: Math.PI * 1.4, rotX: Math.PI * 0.1 },
-// ];
-
 // Floor
 const keyframesFloor = [
-  { progress: 0, pos: [36, -1.5, -13], rotY: 0, rotX: 0 },
-  { progress: 0.2, pos: [36, 4, -13], rotY: 0, rotX: 0 },
-  { progress: 1, pos: [36, 4, -13], rotY: 0, rotX: 0 },
+  { progress: 0, pos: [36, -1.5, -20], rotY: 0, rotX: 0 },
+  { progress: 0.2, pos: [36, 4, -20], rotY: 0, rotX: 0 },
+  { progress: 1, pos: [36, 4, -20], rotY: 0, rotX: 0 },
 ];
 
 // === Fonction qui gère les animations ===
@@ -169,10 +158,6 @@ function animate() {
 
   const progress = getScrollProgress();
 
-  // if (joycon) {
-  //   applyKeyframesToModel(joycon, keyframesJoycon, progress);
-  // }
-
   if (floor) {
     applyKeyframesToModel(floor, keyframesFloor, progress);
   }
@@ -184,34 +169,135 @@ animate();
 //
 //
 // ----------------------------------- Functions -----------------------------------
-function showOnlyPart(partNames) {
-  if (!joycon) return;
 
-  // Convertir en tableau si c'est une seule string
-  const partsArray = Array.isArray(partNames) ? partNames : [partNames];
-
-  // Parcourir tous les enfants du Joycon
-  joycon.traverse((child) => {
-    if (child.isMesh) {
-      // Vérifier si le nom du mesh correspond à un des noms recherchés
-      const isVisible = partsArray.some((partName) =>
-        child.name.toLowerCase().includes(partName.toLowerCase())
-      );
-      child.visible = isVisible;
-    }
+// Animation flottement Joycon avec GSAP
+let floatTween = null;
+function gsapFloatJoycon() {
+  if (floatTween) return;
+  floatTween = gsap.to(joycon.position, {
+    y: 0.1,
+    duration: 1.5,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut",
   });
 }
 
-function showAll() {
-  if (!joycon) return;
+function stopGsapFloatJoycon() {
+  if (floatTween) {
+    floatTween.kill();
+    floatTween = null;
+    joycon.position.y = 0;
+  }
+}
 
+window.joyconParts = {};
+window.joyconOriginalPositions = {};
+
+function getParts() {
   joycon.traverse((child) => {
-    if (child.isMesh) {
-      child.visible = true;
+    // SEULEMENT LES GROUPS avec userData.name
+    const componentName = child.userData.name;
+
+    window.joyconOriginalPositions[componentName] = {
+      x: child.position.x,
+      y: child.position.y,
+      z: child.position.z,
+    };
+
+    window.joyconParts[componentName] = child;
+    // console.log(`✅ Group trouvé: "${componentName}"`);
+  });
+
+  console.log("✅ Groups Joycon:", Object.keys(window.joyconParts));
+  console.log("✅ Détails Groups:", window.joyconParts);
+
+  getMainBlueMeshes();
+}
+
+window.mainBlueMeshes = [];
+
+function getMainBlueMeshes() {
+  window.mainBlueMeshes = [];
+  joycon.traverse((child) => {
+    if (child.isMesh && child.material?.name === "Main blue - export") {
+      // Clone pour GSAP scrub
+      child.originalMaterial = child.material.clone();
+      child.material = child.originalMaterial.clone();
+      window.mainBlueMeshes.push(child.material);
     }
+  });
+  console.log(
+    `✅ ${window.mainBlueMeshes.length} meshes "Main blue - export" trouvés`
+  );
+}
+
+function setMainBlueColor(hexColor) {
+  window.mainBlueMeshes.forEach((material) => {
+    material.color.set(hexColor);
   });
 }
 
+function resetMainBlueColor() {
+  const originalColor = new THREE.Color(0.001, 0.658, 0.799); // Bleu original
+  window.mainBlueMeshes.forEach((material) => {
+    material.color.copy(originalColor);
+  });
+}
+
+function zoomJoycon(inOut) {
+  const targetZ = inOut ? 2 : 0; // -2 = rapproche, 0 = original
+  joycon.position.z = targetZ;
+}
+
+const partsList = [
+  { name: "screw-1", offset: { x: 0, y: -1.3, z: 0 } },
+  { name: "screw-2", offset: { x: 0, y: -1.3, z: 0 } },
+  { name: "screw-3", offset: { x: 0, y: -1.3, z: 0 } },
+  { name: "screw-4", offset: { x: 0, y: -1.3, z: 0 } },
+  { name: "Base", offset: { x: 0, y: -0.5, z: 0 } },
+  { name: "clip-1", offset: { x: 0, y: 0, z: 1 } },
+  { name: "clip-2", offset: { x: 0, y: 0, z: 1 } },
+  { name: "Joystick", offset: { x: 0, y: 1, z: 0 } },
+  { name: "Slideout", offset: { x: 0, y: -1, z: 0 } },
+  { name: "trigger-1", offset: { x: 1, y: 0.15, z: 0 } },
+  { name: "trigger-2", offset: { x: 0.5, y: 0.15, z: 0 } },
+  { name: "arrow-down", offset: { x: 0, y: 0.5, z: 0 } },
+  { name: "arrow-left", offset: { x: 0, y: 0.5, z: 0 } },
+  { name: "arrow-right", offset: { x: 0, y: 0.5, z: 0 } },
+  { name: "arrow-up", offset: { x: 0, y: 0.5, z: 0 } },
+  { name: "Home", offset: { x: 0, y: 0.2, z: 0 } },
+  { name: "Minus", offset: { x: 0, y: 0.1, z: 0 } },
+];
+
+function animateParts(
+  tl,
+  action,
+  startLabel = "25%",
+  duration = 1,
+  stagger = 0.15
+) {
+  const targets = partsList
+    .map((part) => window.joyconParts[part.name]?.position)
+    .filter(Boolean);
+
+  // Direction selon l'action (disperse = +offset, reform = -offset)
+  const direction = action === "disperse" ? "+" : "-";
+
+  tl.to(
+    targets,
+    {
+      x: (i) => `${direction}=${partsList[i].offset.x}`,
+      y: (i) => `${direction}=${partsList[i].offset.y}`,
+      z: (i) => `${direction}=${partsList[i].offset.z}`,
+      duration,
+      stagger,
+    },
+    startLabel
+  );
+
+  return tl;
+}
 // ----------------------------------- GSAP Animations -----------------------------------
 
 // Enregistrer les plugins GSAP
@@ -230,28 +316,68 @@ function initTimeline() {
     },
   });
 
-  tl.eventCallback("onUpdate", () => {
-    console.log("Timeline progress:", tl.progress().toFixed(2));
-  });
+  // tl.eventCallback("onUpdate", () => {
+  //   console.log("Timeline progress:", tl.progress().toFixed(2));
+  // });
 
-  // Card 1 : 0-20% (apparaît puis disparaît)
-  // Cards à 10%, 25%, 40%, 60%, 85% du scroll
-  tl.from(
-    joycon.rotation,
-    {
-      y: Math.PI * 0.2, // 54° sur Y pour voir le dessus
-      x: Math.PI * 0.15, // 54° sur Y pour voir le dessus
-      duration: 2,
-    },
-    "5%"
-  )
+  // Démarre le flottement à 0%
+  tl.call(gsapFloatJoycon, null, "0%")
+
+    // Arrête le flottement à 10%
+
+    .fromTo(
+      joycon.rotation,
+      {
+        y: Math.PI * 0.2,
+        x: Math.PI * 0.15,
+      },
+      {
+        y: Math.PI * 0.3,
+        x: Math.PI * 0.3,
+        duration: 2,
+      },
+      "5%"
+    )
+    .call(gsapFloatJoycon, null, "9%")
+    .call(stopGsapFloatJoycon, null, "10%")
     .fromTo(
       "#card1",
       { opacity: 0, scale: 0.8 },
       { opacity: 1, scale: 1, duration: 2 },
       "10%"
     )
-    .to("#card1", { opacity: 0, duration: 1 }, ">")
+    .to(
+      joycon.position,
+      { z: 1.1, duration: 1.5, ease: "power2.inOut" },
+      "10%"
+    );
+
+  animateParts(tl, "disperse", "10%");
+
+  tl.to(
+    joycon.rotation,
+    {
+      y: Math.PI * 0.1,
+      x: Math.PI * 0.3,
+      duration: 2,
+      ease: "power2.inOut",
+    },
+    "10%"
+  );
+
+  animateParts(tl, "reform", "10%+=3", 1.5, 0.1)
+    .to(
+      joycon.rotation,
+      {
+        y: Math.PI * -0.1,
+        x: Math.PI * 0.2,
+        duration: 1.5,
+        ease: "power2.inOut",
+      },
+      "10%+=3"
+    )
+    .to(joycon.position, { z: 0, duration: 1, ease: "power2.inOut" }, ">")
+    .to("#card1", { opacity: 0, duration: 2 }, ">")
 
     .fromTo(
       "#card2",
@@ -259,6 +385,27 @@ function initTimeline() {
       { opacity: 1, scale: 1, duration: 2 },
       "25%"
     )
+    .fromTo(
+      joycon.rotation,
+      {
+        y: Math.PI * -0.1,
+        x: Math.PI * 0.2,
+      },
+      {
+        y: Math.PI * -0.1,
+        x: Math.PI * 2.4,
+        duration: 4,
+      },
+      "25%"
+    )
+    .to(joycon.position, { z: 2, duration: 2, ease: "power2.inOut" }, "25%")
+    .to({}, { duration: 0.1, onUpdate: resetMainBlueColor }, "25%")
+    .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0xff0000) }, ">")
+    .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0x00ff00) }, ">")
+    .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0x0000ff) }, ">")
+    .to({}, { duration: 0.1, onUpdate: resetMainBlueColor }, ">")
+    .to(joycon.position, { z: 0, duration: 1, ease: "power2.inOut" }, ">")
+
     .to("#card2", { opacity: 0, duration: 1 }, ">")
 
     .fromTo(
@@ -272,15 +419,14 @@ function initTimeline() {
     .fromTo(
       "#card4",
       { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 2 },
+      { opacity: 1, scale: 1, duration: 3 },
       "60%"
     )
     .to("#card4", { opacity: 0, duration: 1 }, ">")
-
     .fromTo(
       "#card5",
       { opacity: 0, scale: 0.8 },
       { opacity: 1, scale: 1, duration: 3 },
       "85%"
-    ); // reste jusqu'à 100%
+    );
 }
