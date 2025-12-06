@@ -312,7 +312,7 @@ function initTimeline() {
       end: `+=${totalDuration * 625}`, // auto-calcul
       scrub: true,
       pin: true,
-      markers: true,
+      // markers: true,
     },
   });
 
