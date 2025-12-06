@@ -59,6 +59,9 @@ gltfLoader.load(
     scene.add(joycon);
     console.log("✅ Joycon chargé:", joycon);
 
+    // pour gsap
+    window.joycon = joycon;
+
     // Montre les mesh disponibles de l'objet
     console.log("=== Parties disponibles ===");
     joycon.traverse((child) => {
@@ -67,7 +70,7 @@ gltfLoader.load(
       }
     });
 
-    animateJoyconFloat();
+    initTimeline()
   },
   (xhr) => {
     if (xhr.total)
@@ -214,15 +217,70 @@ function showAll() {
 // Enregistrer les plugins GSAP
 gsap.registerPlugin(ScrollTrigger);
 
-// Animation 2 : Flottement continu
-function animateJoyconFloat() {
-  if (!joycon) return;
-
-  gsap.to(joycon.position, {
-    y: "+=0.3",
-    duration: 2,
-    yoyo: true,
-    repeat: -1,
-    ease: "sine.inOut",
+function initTimeline() {
+  const totalDuration = 30;
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: ".main",
+      start: "top top",
+      end: `+=${totalDuration * 625}`, // auto-calcul
+      scrub: true,
+      pin: true,
+      markers: true,
+    },
   });
+
+  tl.eventCallback("onUpdate", () => {
+    console.log("Timeline progress:", tl.progress().toFixed(2));
+  });
+
+  // Card 1 : 0-20% (apparaît puis disparaît)
+  // Cards à 10%, 25%, 40%, 60%, 85% du scroll
+  tl.from(
+    joycon.rotation,
+    {
+      y: Math.PI * 0.2, // 54° sur Y pour voir le dessus
+      x: Math.PI * 0.15, // 54° sur Y pour voir le dessus
+      duration: 2,
+    },
+    "5%"
+  )
+    .fromTo(
+      "#card1",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 2 },
+      "10%"
+    )
+    .to("#card1", { opacity: 0, duration: 1 }, ">")
+
+    .fromTo(
+      "#card2",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 2 },
+      "25%"
+    )
+    .to("#card2", { opacity: 0, duration: 1 }, ">")
+
+    .fromTo(
+      "#card3",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 2 },
+      "40%"
+    )
+    .to("#card3", { opacity: 0, duration: 1 }, ">")
+
+    .fromTo(
+      "#card4",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 2 },
+      "60%"
+    )
+    .to("#card4", { opacity: 0, duration: 1 }, ">")
+
+    .fromTo(
+      "#card5",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 3 },
+      "85%"
+    ); // reste jusqu'à 100%
 }
