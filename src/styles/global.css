@@ -40,13 +40,40 @@ body::before {
 /* ------------------- OVERLAYS ------------------- */
 .card {
   position: absolute;
-  width: 320px;
   aspect-ratio: 1 / 1;
-  margin: 2rem;
   transition: var(--transition-base);
 }
 
-.card-details {
+#card1,
+#card3 {
+  transform: translateY(80%);
+  margin-left: 10rem;
+}
+
+
+
+#card4 {
+  transform: translateY(100%);
+  margin-left: 80%;
+}
+
+#card5 {
+ width: 100svw;
+ text-align: center;
+ margin-top: 4rem;
+}
+#card5 a {
+  font-size: 2rem;
+  transition: all var(--transition-base);
+}
+
+#card5 a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+
+/* .card-details {
   display: flex;
   flex-direction: column;
   position: relative;
@@ -63,6 +90,10 @@ body::before {
     0 0 10px rgba(255, 255, 255, 0.3),
     inset 1px 1px 10px rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(20px);
+} */
+
+.card p {
+  font-size: 1.5rem;
 }
 
 /* ------------------- COMPONENTS ------------------- */

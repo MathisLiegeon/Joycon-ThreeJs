@@ -76,6 +76,12 @@ gltfLoader.load(
     // pour gsap
     window.joycon = joycon;
 
+    joycon.traverse((child) => {
+      if (child.userData && child.userData.name) {
+        console.log("Composant Joycon:", child.userData.name, child);
+      }
+    });
+
     getParts();
     initTimeline();
   },
@@ -201,13 +207,28 @@ function stopGsapFloatJoycon() {
 // =============== GET JOYCON PARTS ===============
 window.joyconParts = {};
 window.joyconOriginalPositions = {};
+window.originalMaterials = {};
+window.joystickMaterials = new Set();
 
 function getParts() {
   joycon.traverse((child) => {
     const componentName = child.userData.name;
-    window.joyconParts[componentName] = child;
-  });
 
+    window.joyconParts[componentName] = child;
+
+    // Stocker les matériaux originaux et cloner pour le joystick
+    if (child.isMesh && child.material) {
+      window.originalMaterials[componentName] = {
+        opacity: child.material.opacity,
+        transparent: child.material.transparent,
+      };
+
+      // Cloner les matériaux du joystick pour éviter les conflits
+      if (child.name === "Mesh_14" || child.name === "Mesh_15") {
+        child.material = child.material.clone();
+      }
+    }
+  });
   getMainBlueMeshes();
 }
 
@@ -225,9 +246,6 @@ function getMainBlueMeshes() {
       window.mainBlueMeshes.push(child.material);
     }
   });
-  console.log(
-    `✅ ${window.mainBlueMeshes.length} meshes "Main blue - export" trouvés`
-  );
 }
 
 function setMainBlueColor(hexColor) {
@@ -296,6 +314,61 @@ function animateParts(
 
   return tl;
 }
+
+//
+// =============== JOYSTICK FOCUS ===============
+function setJoystickFocus() {
+  const joystickGroup = window.joyconParts["Joystick"];
+
+  joycon.traverse((child) => {
+    if (child.isMesh && child.material) {
+      let isJoystickPart = false;
+      if (joystickGroup && joystickGroup.children) {
+        isJoystickPart = joystickGroup.children.includes(child);
+      }
+
+      const materials = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
+
+      materials.forEach((mat) => {
+        if (isJoystickPart) {
+          mat.opacity = 1;
+          mat.transparent = false;
+        } else {
+          mat.opacity = 0.2;
+          mat.transparent = true;
+        }
+      });
+    }
+  });
+}
+
+//
+// =============== JOYSTICK UNFOCUS ===============
+function resetJoystickFocus() {
+  joycon.traverse((child) => {
+    if (child.isMesh && child.material) {
+      const componentName = child.userData.name;
+      const original = window.originalMaterials[componentName];
+
+      const materials = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
+
+      materials.forEach((mat) => {
+        if (original) {
+          mat.opacity = original.opacity;
+          mat.transparent = original.transparent;
+        } else {
+          mat.opacity = 1;
+          mat.transparent = false;
+        }
+      });
+    }
+  });
+}
+
 //
 //
 //
@@ -381,12 +454,12 @@ function initTimeline() {
 
     //
     // ============================== PART 2 ==============================
-    .fromTo(
-      "#card2",
-      { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 2 },
-      "25%"
-    )
+    // .fromTo(
+    //   "#card2",
+    //   { opacity: 0, scale: 0.8 },
+    //   { opacity: 1, scale: 1, duration: 3 },
+    //   "25%"
+    // )
     .fromTo(
       joycon.rotation, // rotation 2
       {
@@ -396,46 +469,115 @@ function initTimeline() {
       {
         y: Math.PI * -0.1,
         x: Math.PI * 2.4,
-        duration: 4,
+        duration: 6,
       },
       "25%"
     )
-    .to(joycon.position, { z: 2, duration: 2, ease: "power2.inOut" }, "25%") // Color change
-    .to({}, { duration: 0.1, onUpdate: resetMainBlueColor }, "25%")
-    .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0xff0000) }, ">")
-    .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0x00ff00) }, ">")
-    .to({}, { duration: 1, onUpdate: () => setMainBlueColor(0x0000ff) }, ">")
-    .to({}, { duration: 0.1, onUpdate: resetMainBlueColor }, ">")
-    .to(joycon.position, { z: 0, duration: 1, ease: "power2.inOut" }, ">")
-
-    .to("#card2", { opacity: 0, duration: 1 }, ">") // Part 2 End
-
+    .to(joycon.position, { z: 2, duration: 3, ease: "power2.inOut" }, "25%") // Color change
+    .to({}, { duration: 0.5, onUpdate: resetMainBlueColor }, "25%")
+    .to({}, { duration: 1.5, onUpdate: () => setMainBlueColor(0xff0000) }, ">")
+    .to({}, { duration: 1.5, onUpdate: () => setMainBlueColor(0x00ff00) }, ">")
+    .to({}, { duration: 1.5, onUpdate: () => setMainBlueColor(0x0000ff) }, ">")
+    .to({}, { duration: 0.5, onUpdate: resetMainBlueColor }, ">")
+    .to(joycon.position, { z: 1, duration: 2, ease: "power2.inOut" }, ">")
+    .to(joycon.position, { x: 2, duration: 3, ease: "power2.inOut" }, "<")
     //
     // ============================== PART 3 ==============================
     .fromTo(
       "#card3",
       { opacity: 0, scale: 0.8 },
       { opacity: 1, scale: 1, duration: 2 },
-      "40%"
+      "<"
     )
+    .to(joycon.rotation, {
+      y: Math.PI * 0.2,
+      x: Math.PI * 2.1,
+      z: Math.PI * 0.2,
+      duration: 6,
+    })
+    // .to("#card2", { opacity: 0, duration: 2 }, ">") // Part 2 End
+
     .to("#card3", { opacity: 0, duration: 1 }, ">")
 
     //
     // ============================== PART 4 ==============================
+    .call(
+      () => {
+        // Afficher tous les composants
+        joycon.traverse((child) => {
+          child.visible = true;
+        });
+      },
+      null,
+      ">"
+    );
+  animateParts(tl, "disperse", ">"); // Animate parts
+
+  tl.to(
+    joycon.position,
+    { x: 0, y: -2, z: 3, duration: 2, ease: "power2.inOut" },
+    ">"
+  )
+    .call(resetJoystickFocus, null, ">")
+    .call(setJoystickFocus, null, ">")
+    .to(
+      joycon.rotation,
+      {
+        y: Math.PI * 1.3,
+        x: Math.PI * 2.1,
+        z: Math.PI * 0.2,
+        duration: 4,
+        ease: "power2.inOut",
+      },
+      "55%"
+    )
     .fromTo(
       "#card4",
       { opacity: 0, scale: 0.8 },
       { opacity: 1, scale: 1, duration: 3 },
-      "60%"
+      "55%"
     )
-    .to("#card4", { opacity: 0, duration: 1 }, ">")
+    .call(setJoystickFocus, null, "69%")
+    .call(resetJoystickFocus, null, "70%")
+    .to("#card4", { opacity: 0, duration: 1 }, ">");
 
-    //
-    // ============================== PART 5 ==============================
+  //
+  // ============================== PART 5 ==============================
+  animateParts(tl, "reform", "80%", 4, 0.1) // Animate parts
+    .to(
+      joycon.position,
+      { x: 0, y: 0, z: 0, duration: 3, ease: "power2.inOut" },
+      "80%"
+    )
+    .to(
+      joycon.rotation,
+      {
+        y: Math.PI * 0.3,
+        x: Math.PI * 0,
+        z: Math.PI * 0.2,
+        duration: 3,
+        ease: "power2.inOut",
+      },
+      "80%"
+    )
     .fromTo(
       "#card5",
       { opacity: 0, scale: 0.8 },
       { opacity: 1, scale: 1, duration: 3 },
+      "90%"
+    )
+    .call(stopGsapFloatJoycon, null, "84%")
+    .call(gsapFloatJoycon, null, "85%") // start floating
+    .to(
+      joycon.rotation,
+      {
+        x: Math.PI * 0.1,
+        z: Math.PI * 0.1,
+        duration: 5,
+        ease: "power1.inOut",
+        overwrite: false,
+      },
       "85%"
-    );
+    )
+    .to("#card5", { opacity: 1, duration: 3 }, "95%"); // maintenir la card visible jusqu'à la fin
 }
