@@ -3,11 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="src/styles/style.css" />
     <title>Joycon ThreeJs</title>
+    <link rel="stylesheet" href="src/styles/style.css" />
+    
+  </head>
+  
+  <body class="body">
+
+    <header id="header">
+      <h1>Nintendo Switch Joy-Con</h1>
+      <h3>Modélisation 3D</h3>
+      <div class="btn btn-discover">Explorer</div>
+    </header>
+
+    <main class="main">
+
+      <canvas id="3d-container"></canvas>
+      
+      <div class="card" id="card1">
+        <h4>LOW POLY - STATISTIQUES</h4>
+        <p>Faces : 17,374</p>
+        <p>Triangles : 34,852</p>
+        <p>Composants : 17</p>
+        <p>Matériaux : 4</p>
+      </div>
+
+      <div class="card" id="card2"></div>
+      
+      <div class="card" id="card3">
+        <h4>Défis</h4>
+        <p>Reproduire les différentes textures du plastique</p>
+        <p>Modéliser les micro-reliefs des boutons</p>
+        <p>Équilibre entre détail et performance web</p>
+      </div>
+
+      <div class="card" id="card4">
+        <h4>LE JOYSTICK</h4>
+        <p>Faces : 3,916</p>
+        <p>Matériaux : 2</p>
+      </div>
+
+      <div class="card" id="card5">
+        <h3>Merci de votre visite</h3>
+        <p>Découvrez mes autres créations</p>
+        <a href="https://portfolio.mathisliegeon.fr" target="_blank">portfolio.mathisliegeon.fr</a>
+      </div>
+
+      <img src="public/img/lucas-santos-wdg8yu362gQ-unsplash.jpg" alt="Joycon photo" class="img-joycon">
+
+    </main>
+    
+    <!-- SCRIPTS -->
+    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+    
+    <!-- IMPORTMAP Three.js -->
     <script type="importmap">
       {
         "imports": {
@@ -15,54 +67,8 @@
         }
       }
     </script>
-  </head>
-  <body class="body">
-    <header id="header">
-      <h1>Nintendo Switch Joy-Con</h1>
-      <h3>Modélisation 3D</h3>
-
-      <div class="btn btn-discover">Explorer</div>
-    </header>
-
-    <main class="main">
-      <canvas id="3d-container"></canvas>
-
-      <section class="scroll-section">
-        <div class="card" id="card1">
-          <h4>LOW POLY - STATISTIQUES</h4>
-          <p>Faces : 17,374</p>
-          <p>Triangles : 34,852</p>
-          <p>Composants : 17</p>
-          <p>Matériaux : 4</p>
-        </div>
-        <div class="card" id="card2">
-          <!-- <h3>card 2</h3> -->
-        </div>
-        <div class="card" id="card3">
-          <h4>Défis</h4>
-          <p>Reproduire les différentes textures du plastique</p>
-          <p>Modéliser les micro-reliefs des boutons</p>
-          <p>Équilibre entre détail et performance web</p>
-        </div>
-        <div class="card" id="card4">
-          <h4>LE JOYSTICK</h4>
-          <p>Faces : 3,916</p>
-          <p>Matériaux : 2</p>
-        </div>
-        <div class="card" id="card5">
-          <h3>Merci de votre visite</h3>
-          <p>Découvrez mes autres créations</p>
-          <a href="https://portfolio.mathisliegeon.fr" target="_blank">portfolio.mathisliegeon.fr</a>
-        </div>
-
-        <img src="public\img\lucas-santos-wdg8yu362gQ-unsplash.jpg" alt="Joycon photo" class="img-joycon">
-      </section>
-
-    </main>
-
-    <footer id="footer">
-      <script type="module" src="src/js/app.js"></script>
-      <script type="module" src="src/js/main.js"></script>
-    </footer>
+    
+    <script type="module" src="src/js/main.js"></script>
+    <script type="module" src="src/js/app.js"></script>
   </body>
 </html>

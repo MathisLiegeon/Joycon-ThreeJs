@@ -1,9 +1,6 @@
 gsap.registerPlugin(ScrollTrigger);
 
 //
-//
-//
-//
 // ===================================================== BUTTON DISCOVER ===================================================== //
 const btnDiscover = document.querySelector(".btn-discover");
 
@@ -27,30 +24,3 @@ btnDiscover.addEventListener("click", () => {
     behavior: "smooth",
   });
 });
-
-//
-//
-//
-//
-// ===================================================== SMOOTH SCROLL ===================================================== //
-let scrollTarget = window.scrollY;
-let scrollPos = window.scrollY;
-
-window.addEventListener(
-  "wheel",
-  (e) => {
-    e.preventDefault(); // empêche le saut brut
-    scrollTarget += e.deltaY * 1; // multiplier = intensité / sensation
-    animateScroll();
-  },
-  { passive: false }
-);
-
-function animateScroll() {
-  gsap.to(window, {
-    scrollTo: scrollTarget,
-    duration: 0.2, // durée de l’inertie
-    ease: "power2.out", // easing "smooth"
-    overwrite: "auto",
-  });
-}

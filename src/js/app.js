@@ -76,11 +76,11 @@ gltfLoader.load(
     // pour gsap
     window.joycon = joycon;
 
-    joycon.traverse((child) => {
-      if (child.userData && child.userData.name) {
-        console.log("Composant Joycon:", child.userData.name, child);
-      }
-    });
+    // joycon.traverse((child) => {
+    //   if (child.userData && child.userData.name) {
+    //     console.log("Composant Joycon:", child.userData.name, child);
+    //   }
+    // });
 
     getParts();
     initTimeline();
@@ -454,12 +454,6 @@ function initTimeline() {
 
     //
     // ============================== PART 2 ==============================
-    // .fromTo(
-    //   "#card2",
-    //   { opacity: 0, scale: 0.8 },
-    //   { opacity: 1, scale: 1, duration: 3 },
-    //   "25%"
-    // )
     .fromTo(
       joycon.rotation, // rotation 2
       {
@@ -502,11 +496,7 @@ function initTimeline() {
       duration: 6,
     })
     // .to("#card2", { opacity: 0, duration: 2 }, ">") // Part 2 End
-    .to(
-      ".img-joycon",
-      { opacity: 0, scale: 0.8 },
-      ">"
-    )
+    .to(".img-joycon", { opacity: 0, scale: 0.8 }, ">")
 
     .to("#card3", { opacity: 0, duration: 1 }, ">")
 
