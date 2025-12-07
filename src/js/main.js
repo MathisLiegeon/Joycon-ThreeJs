@@ -489,6 +489,12 @@ function initTimeline() {
       { opacity: 1, scale: 1, duration: 2 },
       "<"
     )
+    .fromTo(
+      ".img-joycon",
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 3 },
+      ">"
+    )
     .to(joycon.rotation, {
       y: Math.PI * 0.2,
       x: Math.PI * 2.1,
@@ -496,6 +502,11 @@ function initTimeline() {
       duration: 6,
     })
     // .to("#card2", { opacity: 0, duration: 2 }, ">") // Part 2 End
+    .to(
+      ".img-joycon",
+      { opacity: 0, scale: 0.8 },
+      ">"
+    )
 
     .to("#card3", { opacity: 0, duration: 1 }, ">")
 
