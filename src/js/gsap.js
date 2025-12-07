@@ -18,7 +18,7 @@ gsap.to(btnDiscover, {
 
 btnDiscover.addEventListener("click", () => {
   window.scrollBy({
-    top: 2000, // Descend d'une hauteur d'écran
+    top: 1800, // Descend d'une hauteur d'écran
     behavior: "smooth",
   });
 });
