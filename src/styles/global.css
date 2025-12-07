@@ -45,6 +45,7 @@ body::before {
   position: absolute;
   aspect-ratio: 1 / 1;
   transition: var(--transition-base);
+  opacity: 0;
 }
 
 #card1,
@@ -84,6 +85,7 @@ body::before {
 
 /* IMAGE */
 .img-joycon {
+  opacity: 0;
   position: absolute;
   width: 400px;
   height: auto;
