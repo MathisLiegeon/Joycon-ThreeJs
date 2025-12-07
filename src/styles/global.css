@@ -48,6 +48,10 @@ body::before {
   opacity: 0;
 }
 
+.card p {
+  font-size: 1.5rem;
+}
+
 #card1,
 #card3 {
   transform: translateY(80%);
@@ -77,10 +81,6 @@ body::before {
 #card5 a:hover {
   text-decoration: underline;
   text-decoration-thickness: 1px;
-}
-
-.card p {
-  font-size: 1.5rem;
 }
 
 /* IMAGE */
