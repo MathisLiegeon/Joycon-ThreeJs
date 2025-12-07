@@ -62,9 +62,14 @@ body::before {
  text-align: center;
  margin-top: 4rem;
 }
-#card5 a {
+#card5 a,
+#card5 p {
   font-size: 2rem;
+}
+
+#card5 a {
   transition: all var(--transition-base);
+  font-style: italic;
 }
 
 #card5 a:hover {
