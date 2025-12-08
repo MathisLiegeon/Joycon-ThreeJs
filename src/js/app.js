@@ -389,7 +389,7 @@ function initTimeline() {
       trigger: ".main",
       start: "top top",
       end: `+=${totalDuration * 625}`, // auto-calcul de la longueur de la timeline
-      scrub: true,
+      scrub: 1,
       pin: true,
       // markers: true,
     },
